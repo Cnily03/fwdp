@@ -57,7 +57,12 @@ async fn main() -> Result<()> {
     // Accept connections and handle them
     while let Ok((client_stream, client_addr)) = listener.accept().await {
         let id = counter.fetch_add(1, Ordering::SeqCst);
-        record!([id], "{} new connection from {}", "+".green(), client_addr);
+        record!(
+            [id],
+            "{} new connection from {}",
+            "+".green().bold(),
+            client_addr.to_string().green()
+        );
 
         let target_addr = target_addr.clone();
         tokio::spawn(async move {
@@ -67,7 +72,12 @@ async fn main() -> Result<()> {
                     "error handling connection from {}: {}", client_addr, e
                 );
             } else {
-                record!([id], "{} connection from {} closed", "-".red(), client_addr);
+                record!(
+                    [id],
+                    "{} connection from {} closed",
+                    "-".red().bold(),
+                    client_addr.to_string().red()
+                );
             }
         });
     }
@@ -105,7 +115,7 @@ macro_rules! fmt_addr_forward {
         let right_padded = if $target_addr == "unknown" {
             right_padded.red().dimmed().bold()
         } else {
-            right_padded.bright_black().bold()
+            right_padded.bold()
         };
 
         format!("{} {} {}", left_padded, ">>>".blue(), right_padded)
@@ -120,7 +130,7 @@ macro_rules! fmt_addr_forward {
         let left_padded = if $target_addr == "unknown" {
             left_padded.red().dimmed().bold()
         } else {
-            left_padded.bright_black().bold()
+            left_padded.bold()
         };
         let right_padded = if $client_addr == "unknown" {
             right_padded.red().bold()
@@ -133,7 +143,6 @@ macro_rules! fmt_addr_forward {
 }
 
 macro_rules! copy_and_record {
-    // r => w, a function to call, input bytes read
     ($reader:expr => $writer:expr, $callback:expr) => {{
         async move {
             use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -148,7 +157,6 @@ macro_rules! copy_and_record {
                 $writer.write_all(&buf[..bytes_read]).await?;
                 total_bytes += bytes_read as u64;
 
-                // Call callback for each packet
                 $callback(bytes_read);
             }
 
@@ -194,9 +202,9 @@ async fn handle_connection(
         |bytes_read| {
             record!(
                 [id],
-                "{} - {}",
+                "{} {}",
                 fmt_addr_forward!(id, (client_addr_str, <<<, target_addr_str)).dimmed(),
-                format!("{} bytes", bytes_read).bright_black()
+                format!("- {} bytes", bytes_read).bright_black()
             );
         }
     );
