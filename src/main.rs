@@ -22,6 +22,10 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialize logger
+    logger::init_colors();
+
+    // Parse command line arguments
     let args = Args::parse();
 
     // Parse target address
