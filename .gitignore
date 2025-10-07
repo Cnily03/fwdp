@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store/
+logs/
+target/
+*.bin
+*.log
+.env.local
+.env.*.local
+*.zip
+*.bak
