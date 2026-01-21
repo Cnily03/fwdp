@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  BIN_NAME: revp
+  BIN_NAME: fwdp
 
 jobs:
   binary:
